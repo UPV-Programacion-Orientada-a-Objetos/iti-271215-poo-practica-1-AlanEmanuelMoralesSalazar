@@ -8,15 +8,18 @@ public class App
 {
     public static void main( String[] args )
     {
-        commandsSQL sql = new commandsSQL();
-        try {
-            sql.use("/home/alan/Escritorio/POO");
-        }catch(Exception e) {
-
-        }
-        {
         String line = null;
         BufferedReader ent = new BufferedReader(new InputStreamReader(System.in));
+        commandsSQL sql = new commandsSQL();
+        try {
+            System.out.println("Path: ");
+            String path = ent.readLine();
+            sql.use(path);
+        }catch(Exception e) {
+            System.out.println("Path no identificado");
+            return;
+        }
+        {
         try {
             while(true) {
                 line = ent.readLine();
