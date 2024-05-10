@@ -1,7 +1,6 @@
 package edu.upvictoria.fpoo;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,16 +9,42 @@ public class commandsSQL {
     String path = null;
     public void createTable(String nameTable, String columns){
         File f = new File(path + "/" + nameTable + ".csv");
-        try{
-            if(!f.exists()){
-                f.createNewFile();
-            } else {
-                throw new FileAlreadyExistsException("La tabla " + nameTable + " ya existe");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(f.exists()){
+            System.out.println("La tabla " + nameTable + " ya existe");
         }
+        try {
+            FileWriter fw = new FileWriter(f);
+            Pattern guiaStruct = Pattern.compile("(\\w+)\\s+(\\w+)(?:\\((\\d+)\\))?\\s*(NOT\\s+NULL|NULL)?\\s*(PRIMARY\\s+KEY)?", Pattern.CASE_INSENSITIVE);
+            Matcher mat2 = guiaStruct.matcher(columns);
+            StringBuilder mod = new StringBuilder(); //permite modificar construir sin afectar el objeto
+            while (mat2.find()) {
+                while (mat2.find()) {
+                    String nameColumn = mat2.group(1);
+                    String dataType = mat2.group(2);
+                    String tamanio = mat2.group(3);
+                    String obli = mat2.group(4);
+                    String Key = mat2.group(5);
 
+                    mod.append(nameColumn+ " " +dataType);
+                    if (tamanio != null) {
+                        mod.append("(" + tamanio + ")");
+                    }
+                    if (obli != null) {
+                        mod.append(" " + obli);
+                    }
+                    if (Key != null) {
+                        mod.append(" " + Key);
+                    }
+                    mod.append(",");
+                }
+            }
+            String tit = mod.toString().trim();
+            fw.write(tit.substring(0,tit.length()-1) + "\n");
+            System.out.println("Tabla creada con exito");
+            fw.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Error creando tabla " + nameTable);
+        }
     }
     public void select(String nameTable) {
 
@@ -31,7 +56,38 @@ public class commandsSQL {
 
     }
     public void dropTable(String nameTable) {
-
+        try{
+            File directorio = new File(path);
+            if(!directorio.exists()){
+                throw new RuntimeException("No hay tablas creadas");
+            } else {
+                File[] files = directorio.listFiles();
+                boolean found = false;
+                for (File file : files) {
+                    if (file.isFile() && file.getName().equals(nameTable + ".csv")) {
+                        BufferedReader ent = new BufferedReader(new InputStreamReader(System.in));
+                        System.out.print("¿Está seguro de que desea eliminar la tabla " + nameTable + "? (S/N): ");
+                        String resp = ent.readLine();
+                        if (resp.equalsIgnoreCase("S")) {
+                            if (file.delete()) {
+                                found = true;
+                                System.out.println("Tabla eliminada: " + nameTable);
+                            } else {
+                                throw new RuntimeException("No se pudo eliminar la tabla: " + nameTable);
+                            }
+                        } else {
+                            System.out.println("La tabla no se ha eliminado");
+                            return; // Salimos del método sin eliminar la tabla
+                        }
+                    }
+                }
+                if(!found){
+                    throw new RuntimeException("No se encontró la tabla : " + nameTable + ".csv");
+                }
+            }
+        } catch (Exception e){
+            System.out.println("Error al eliminar la tabla : " + nameTable + ".csv");
+        }
     }
     public void use(String path) throws RuntimeException{
         File arch = new File(path);
@@ -76,7 +132,6 @@ public class commandsSQL {
             if ((mat = Pattern.compile("\\bCREATE TABLE\\b\\s*(\\w+)\\s*\\((.*?)\\)\\s*;", Pattern.CASE_INSENSITIVE).matcher(line)).find()) {
                 String nameTable = mat.group(1);
                 String columns = mat.group(2);
-                System.out.println(mat.group(2));
                 createTable(nameTable, columns);
             }
             //SHOW TABLE
@@ -90,6 +145,11 @@ public class commandsSQL {
                 insert();
             }
             //DROP TABLE
+            if ((mat = Pattern.compile("\\bDROP TABLE\\b\\s*\\b(.*);", Pattern.CASE_INSENSITIVE).matcher(line)).find()) {
+                String nameTable = mat.group(1);
+                System.out.println(mat.group(1));
+                dropTable(nameTable);
+            }
         }catch (IndexOutOfBoundsException e){
             System.out.println("La expresion ingresada es invalida");
         }
