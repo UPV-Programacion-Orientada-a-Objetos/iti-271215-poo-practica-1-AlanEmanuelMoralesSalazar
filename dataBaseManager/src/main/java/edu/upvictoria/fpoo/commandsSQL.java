@@ -1,7 +1,6 @@
 package edu.upvictoria.fpoo;
 
 import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,7 +65,7 @@ public class commandsSQL {
                 for (File file : files) {
                     if (file.isFile() && file.getName().equals(nameTable + ".csv")) {
                         BufferedReader ent = new BufferedReader(new InputStreamReader(System.in));
-                        System.out.print("¿Está seguro de que desea eliminar la tabla " + nameTable + "? (S/N): ");
+                        System.out.print("¿Seguro de eliminar la tabla " + nameTable + "? (S/N): ");
                         String resp = ent.readLine();
                         if (resp.equalsIgnoreCase("S")) {
                             if (file.delete()) {
@@ -150,7 +149,7 @@ public class commandsSQL {
                 System.out.println(mat.group(1));
                 dropTable(nameTable);
             }
-        }catch (IndexOutOfBoundsException e){
+        }catch (Exception e){
             System.out.println("La expresion ingresada es invalida");
         }
     }
