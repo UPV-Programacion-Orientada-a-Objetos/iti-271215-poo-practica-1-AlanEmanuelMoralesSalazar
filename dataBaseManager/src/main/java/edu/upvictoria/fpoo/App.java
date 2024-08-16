@@ -4,34 +4,32 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.*;
 
-public class App
-{
-    public static void main( String[] args )
-    {
-        String line = null;
+public class App {
+    public static void main(String[] args) {
         BufferedReader ent = new BufferedReader(new InputStreamReader(System.in));
-        commandsSQL sql = new commandsSQL();
+        Analizador sql = new Analizador();
+        commandsSQL cmdSQL = new commandsSQL();
+        StringBuilder qb = new StringBuilder();
+
         try {
-            System.out.println("Path: ");
-            String path = ent.readLine();
-            sql.use(path);
-        }catch(Exception e) {
-            System.out.println("Path no identificado");
-            return;
-        }
-        {
-        try {
-            while(true) {
-                line = ent.readLine();
-                sql.commands(line);
-                if(line.equals("exit")){
+            while (true) {
+                System.out.print("> ");
+                String line = ent.readLine().trim();
+                if (line.equalsIgnoreCase("exit")) {
                     break;
+                }
+                qb.append(line).append(" ");
+                // checamos si la sentencia termina en ;
+                if (line.endsWith(";")){
+                    String q = qb.toString().trim();
+                    q = q.substring(0, q.length() - 1).trim();
+                    sql.commands(q, cmdSQL);
+                    qb.setLength(0);  //limpia el stringbuilder
                 }
             }
             ent.close();
         } catch (IOException e) {
-            System.err.println("Ha ocurrido un error al leer el entrada");
-        }
+            System.err.println("Ha ocurrido un error al leer la entrada");
         }
     }
 }

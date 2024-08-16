@@ -1,0 +1,4 @@
+Columna,Tipo de Dato,NULL?,PK?
+id,INT,NO,SI
+name,VARCHAR2(20),SI,NO
+age,INT,SI,NO
